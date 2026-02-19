@@ -4,13 +4,10 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente
-# Ajuste para garantir que o .env na raiz seja carregado
+# Garante carregamento do .env na raiz
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 load_dotenv(os.path.join(ROOT_DIR, '.env'))
 
-# Configuração do Banco de Dados
-# Inicialmente usando SQLite, mas pode ser alterado para PostgreSQL na string de conexão
 DB_FOLDER_NAME = os.getenv('DB_FOLDER')
 DB_NAME = os.getenv('DB_NAME')
 
@@ -25,7 +22,7 @@ class Venda(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     data = Column(Date)
-    codigo = Column(String)  # Pode ser string ou integer dependendo do formato do dado
+    codigo = Column(String)
     funcionario = Column(String)
     produto = Column(String)
     marca = Column(String)

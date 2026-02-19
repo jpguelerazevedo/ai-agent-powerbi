@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import plotly.express as px
 from sqlalchemy.engine import Engine
-import warnings # Adicionado
+import warnings
 
 def generate_chart(llm, user_input: str, db_engine: Engine):
     """
@@ -34,7 +34,6 @@ def generate_chart(llm, user_input: str, db_engine: Engine):
         res = llm.invoke(prompt_sql)
         content = res.content.replace("```json", "").replace("```", "").strip()
         
-        # Tenta fazer parse do JSON
         charts_request = []
         
         # Tenta extrair JSON se houver texto em volta
@@ -43,11 +42,10 @@ def generate_chart(llm, user_input: str, db_engine: Engine):
             json_str = match.group(0)
             charts_request = json.loads(json_str)
         else:
-             # Tenta parse direto ou corrige erros comuns de formatação
             try:
                 charts_request = json.loads(content)
             except json.JSONDecodeError:
-                # Fallback simples: se parecer SQL, cria estrutura manual
+                # Fallback: Se parecer SQL, cria estrutura manual
                 if "SELECT" in content.upper():
                      charts_request = [{"sql": content, "chart_type": "bar", "title": "Gráfico"}]
                 else:
@@ -77,41 +75,32 @@ def generate_chart(llm, user_input: str, db_engine: Engine):
                 if df_result.empty:
                     continue
                     
-                # Lógica de plotagem guiada pelo chart_type
                 numeric_cols = df_result.select_dtypes(include=['number']).columns
                 categorical_cols = df_result.select_dtypes(include=['object', 'string']).columns
                 
-                # Detecção avançada de data
+                # Detecção avançada de colunas de data
                 date_cols = []
                 for col in df_result.columns:
-                    # Verifica se é datetime
                     if pd.api.types.is_datetime64_any_dtype(df_result[col]):
                         date_cols.append(col)
-                    # Verifica se é objeto mas contem datas
                     elif len(df_result) > 0 and df_result[col].dtype == 'object':
                          try:
-                             # Silencia warnings de inferência de data
                              with warnings.catch_warnings():
                                 warnings.simplefilter("ignore")
-                                # Tenta converter amostra para ver se é data
                                 pd.to_datetime(df_result[col]) 
-                             
-                             # Se deu certo, converte a coluna toda (opcional, ou deixa pro plotly)
-                             # df_result[col] = pd.to_datetime(df_result[col]).dt.date
                              date_cols.append(col)
                          except:
                              pass
 
-                # Remove datas das categóricas
                 categorical_cols = [c for c in categorical_cols if c not in date_cols]
                 
-                # Seleção de eixos
+                # Seleção automática de eixos
                 x_col, y_col = None, None
                 
                 if len(numeric_cols) > 0:
                     y_col = numeric_cols[0]
                     if len(date_cols) > 0:
-                        x_col = date_cols[0] # Preferência por data no eixo X
+                        x_col = date_cols[0]
                     elif len(categorical_cols) > 0:
                         x_col = categorical_cols[0]
                     else:
@@ -136,7 +125,7 @@ def generate_chart(llm, user_input: str, db_engine: Engine):
                     elif 'histogram' in c_type:
                         chart_obj = px.histogram(df_result, x=x_col, y=y_col, title=title)
                     else:
-                            chart_obj = px.bar(df_result, x=x_col, y=y_col, title=title)
+                        chart_obj = px.bar(df_result, x=x_col, y=y_col, title=title)
                     
                     results.append({
                         "title": title,

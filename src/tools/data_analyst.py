@@ -16,11 +16,9 @@ def analyze_data(llm: BaseChatModel, dataframe: pd.DataFrame, context: str) -> s
     if dataframe.empty:
         return "Não há dados disponíveis para análise."
 
-    # Limita o tamanho dos dados para não estourar o contexto do LLM
-    # Copia para não alterar o original
+    # Limita contexto e ordena para facilitar análise do LLM
     df_display = dataframe.copy()
     
-    # Ordena os dados decrescente se houver numericos (facilita para o LLM identificar o maximo)
     numeric_cols = df_display.select_dtypes(include=['number']).columns
     if not numeric_cols.empty:
          df_display = df_display.sort_values(by=numeric_cols[0], ascending=False)

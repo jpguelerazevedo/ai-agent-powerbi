@@ -8,15 +8,13 @@ def render_header():
     # Custom CSS
     st.markdown("""
         <style>
-        /* 1. CONFIGURAÇÃO GERAL DO CORPO DA PÁGINA (TÍTULO E TEXTO) */
-        /* Define que todo o conteúdo principal terá no MÁXIMO 60% da largura da tela */
+        /* 1. CONFIGURAÇÃO GERAL DO CORPO DA PÁGINA */
         .block-container {
             max-width: 60% !important;
             margin: auto !important;
         }
 
-        /* 2. CONFIGURAÇÃO DO INPUT (CAIXA DE DIGITAÇÃO) */
-        /* O container do input é fixo. Para centralizar 60%, usamos width 60% e margens auto */
+        /* 2. CONFIGURAÇÃO DO INPUT */
         .stChatInputContainer {
             width: 60% !important;
             max-width: 60% !important;
@@ -26,54 +24,48 @@ def render_header():
             right: 0 !important;
         }
         
-        /* A caixa interna de input ocupa 100% do container de 60% */
         div[data-testid="stChatInput"] {
             width: 60% !important;
             margin: auto !important;
         }
 
-        /* 3. CONFIGURAÇÃO DAS MENSAGENS (CHAT) */
-        /* Mensagens ocupam 100% do espaço disponível (que já é 60%) */
+        /* 3. CONFIGURAÇÃO DAS MENSAGENS */
         .stChatMessage {
             width: 100% !important;
         }
         
-        /* Remove recuos extras para alinhamento perfeito */
         div[data-testid="stChatMessageContent"] {
             margin-left: 0 !important;
             padding-left: 0 !important;
         }
 
         /* 4. CORREÇÃO DE LAYOUT E CONTAINER */
-        /* Garante que os containers tenham altura automática para não cortar conteúdo */
         .element-container {
             height: auto !important;
             overflow: visible !important;
         }
         
-        /* Espaçamento entre blocos verticais para evitar sobreposição */
         .stVerticalBlock {
             gap: 1rem;
         }
         
-        /* 5. TÍTULO COM PADDING INFERIOR */
+        /* 5. TÍTULO */
         h1 {
             padding-bottom: 2rem !important;
         }
 
-        /* 6. MODIFICAR O CABEÇALHO PADRÃO DO STREAMLIT */
-        /* Esconde a decoração colorida do topo se houver */
+        /* 6. MODIFICAR O CABEÇALHO PADRÃO */
         header[data-testid="stHeader"] {
             background-color: transparent !important;
         }
         
-        /* ELEMENTO FIXO NO TOPO CENTRALIZADO (Largura igual ao conteúdo) */
+        /* ELEMENTO FIXO NO TOPO CENTRALIZADO */
         .fixed-header {
             position: fixed;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 60%; /* Mesma largura do conteúdo principal */
+            width: 60%;
             height: 7rem;
             display: flex;
             align-items: center;
@@ -84,7 +76,7 @@ def render_header():
         }
 
         .main .block-container {
-             padding-top: 7rem !important; /* Ajuste do padding do conteúdo */
+             padding-top: 7rem !important;
         }
         </style>
         
@@ -93,14 +85,11 @@ def render_header():
         </div>
     """, unsafe_allow_html=True)
 
-    # st.title("Assistente de Power BI") # Removido pois usamos o header fixo acima
-
 
 def render_kpis(df: pd.DataFrame):
     """Renderiza cartões de KPI se houver dados numéricos."""
     numeric_cols = df.select_dtypes(include=['number']).columns
     if len(numeric_cols) > 0:
-        # Pega a primeira coluna numérica relevante para KPI (pode ser ajustado)
         target_col = numeric_cols[0] 
         total_val = df[target_col].sum()
         mean_val = df[target_col].mean()    
@@ -118,10 +107,8 @@ def render_chart_section(chart_data, llm, analyze_func):
     """
     st.markdown(f"### {chart_data['title']}")
     
-    # 1. KPIs
     render_kpis(chart_data['dataframe'])
     
-    # 2. Abas
     tab_viz, tab_data, tab_analysis, tab_sql = st.tabs(["Visualização", "Dados", "Análise IA", "SQL"])
     
     with tab_viz:
@@ -136,11 +123,11 @@ def render_chart_section(chart_data, llm, analyze_func):
     with tab_analysis:
         analysis_text = chart_data.get('analysis')
         
-        # Se não tiver análise prévia, gera agora (para novos charts)
+        # Gera análise sob demanda se não existir
         if not analysis_text and analyze_func:
             with st.spinner(f"Gerando insights..."):
                 analysis_text = analyze_func(llm, chart_data['dataframe'], chart_data['title'])
-                chart_data['analysis'] = analysis_text # Salva para o futuro
+                chart_data['analysis'] = analysis_text
         
         if analysis_text:
             st.markdown(analysis_text)
