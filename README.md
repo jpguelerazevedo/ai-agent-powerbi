@@ -1,4 +1,4 @@
-# 📊 ReAct Agent Power BI
+# 📊 AI Agent Power BI
 
 Este projeto é um assistente inteligente de Business Intelligence (BI) que utiliza Modelos de Linguagem (LLMs) locais via **Ollama** para gerar visualizações de dados, insights analíticos e consultas SQL automaticamente a partir de linguagem natural.
 
